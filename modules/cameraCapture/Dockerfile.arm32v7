@@ -1,0 +1,15 @@
+FROM francoisgervais/opencv-python
+
+WORKDIR /app
+
+ADD ./sample.mp4 .
+
+COPY requirements.txt ./
+
+RUN pip install -r requirements.txt
+
+COPY . .
+
+CMD [ "python3", "-u", "./main.py" ]
+
+EXPOSE 8080
