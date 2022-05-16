@@ -74,19 +74,13 @@
             "restartPolicy": "always",
             "settings": {
               "image": "${MODULES.cameraCapture}",
-              "createOptions": "{\"Env\":[\"IMAGE_PATH=sample.mp4\",\"IMAGE_PROCESSING_ENDPOINT=http://classifier/image\"]}"
-            }
-          },
-          "outputViz": {
-            "version": "1.0",
-            "type": "docker",
-            "status": "running",
-            "restartPolicy": "always",
-            "settings": {
-              "image": "${MODULES.outputViz}",
               "createOptions": {
-                "ExposedPorts":{
-                  "8080/udp":{}
+                "Env": [
+                  "IMAGE_PATH=sample.mp4",
+                  "IMAGE_PROCESSING_ENDPOINT=http://classifier/image"
+                ],
+                "ExposedPorts": {
+                  "8080/udp": {}
                 },
                 "HostConfig": {
                   "PortBindings": {

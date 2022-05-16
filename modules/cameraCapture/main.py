@@ -48,55 +48,32 @@ def sendFrameForProcessing(imagePath, imageProcessingEndpoint):
     return json.dumps(response.json())
 
 
-def main(imagePath, imageProcessingEndpoint):
+def main():
     try:
-        print ( "Simulated camera module for Azure IoT Edge. Press Ctrl-C to exit." )
-
-        try:
-            global CLIENT
-            CLIENT = IoTHubModuleClient.create_from_edge_environment()
-        except Exception as iothub_error:
-            print ( "Unexpected error {} from IoTHub".format(iothub_error) )
-            return
-
-        print ( "The sample is now sending images for processing and will indefinitely.")
-
-        cap = cv2.VideoCapture(imagePath)
-
-    
-        while(cap.isOpened()):
-        #while True:
-            success, img = cap.read()
-            if not success:
-                print('No Video')
-                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            else:
-                ret,buffer = cv2.imencode('.jpg', img)  
-                img=buffer.tobytes()
-                #ewImg= cv2.imencode('.jpg', img)[1].tobytes()
-                # concat frame one by one and show result
-                classification = sendFrameForProcessing(img, imageProcessingEndpoint)
-                if classification:
-                    send_to_hub(classification)
-                time.sleep(3)
-    
-                
-
-    except KeyboardInterrupt:
-        print ( "IoT Edge module sample stopped" )
+        global CLIENT
+        CLIENT = IoTHubModuleClient.create_from_edge_environment()
+    except Exception as iothub_error:
+        print ( "Unexpected error {} from IoTHub".format(iothub_error) )
+        return
 
 
 def gen_frames():  
     while True:
-        success, frame = camera.read()  # read the camera frame
+        success, frame = cap.read()  # read the camera frame
+        frame = cv2.resize(frame, (640,480))
         if not success:
             break
         else:
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
-
+            #classification = sendFrameForProcessing(frame, IMAGE_PROCESSING_ENDPOINT)
+            #if classification:
+            #    send_to_hub(classification)
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            
+
+    
 
 @app.route('/')
 def index():
@@ -110,14 +87,16 @@ def video_feed():
 if __name__ == '__main__':
     try:
         # Retrieve the image location and image classifying server endpoint from container environment
-        IMAGE_PATH = os.getenv('IMAGE_PATH', "")
+        VIDEO_PATH = os.getenv('IMAGE_PATH', "")
         IMAGE_PROCESSING_ENDPOINT = os.getenv('IMAGE_PROCESSING_ENDPOINT', "")
     except ValueError as error:
         print ( error )
         sys.exit(1)
 
-    if ((IMAGE_PATH and IMAGE_PROCESSING_ENDPOINT) != ""):
+    if ((VIDEO_PATH and IMAGE_PROCESSING_ENDPOINT) != ""):
+        cap = cv2.VideoCapture(VIDEO_PATH)
+        main()
         app.run(debug=True, port=8080, host='0.0.0.0')
-        main(IMAGE_PATH, IMAGE_PROCESSING_ENDPOINT)
+        
     else: 
         print ( "Error: Image path or image-processing endpoint missing" )

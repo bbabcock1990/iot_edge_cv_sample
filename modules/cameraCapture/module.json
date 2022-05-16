@@ -4,7 +4,7 @@
   "image": {
     "repository": "crc1demo01.azurecr.io/cameracapture",
     "tag": {
-      "version": "0.0.8",
+      "version": "0.1.2",
       "platforms": {
         "arm32v7": "./Dockerfile.arm32v7"
       }
