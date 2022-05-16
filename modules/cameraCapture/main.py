@@ -32,11 +32,6 @@ def send_to_hub(strMessage):
 # Return the JSON response from the server with the prediction result
 def sendFrameForProcessing(imagePath, imageProcessingEndpoint):
     headers = {'Content-Type': 'application/octet-stream'}
-
-    #with open(imagePath, mode="rb") as test_image:
-
-    #test_image = imagePath
-    
     try:
         response = requests.post(imageProcessingEndpoint, headers = headers, data = imagePath)
         print("Response from classification service: (" + str(response.status_code) + ") " + json.dumps(response.json()) + "\n")
@@ -58,11 +53,11 @@ def main():
 
 
 def gen_frames():  
-    while True:
+    while(cap.isOpened()):
         success, frame = cap.read()  # read the camera frame
-        frame = cv2.resize(frame, (640,480))
+        #frame = cv2.resize(frame, (640,480))
         if not success:
-            break
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         else:
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
